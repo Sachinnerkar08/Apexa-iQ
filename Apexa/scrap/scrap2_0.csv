@@ -1,0 +1,4 @@
+Version,Servicing option,Availability date,Latest revision date,Latest build,"End of servicing: Home, Pro, Pro Education, and Pro for Workstations","End of servicing: Enterprise, Education, IoT Enterprise, and Enterprise multi-session"
+24H2,General Availability Channel,2024-10-01,2025-03-11,26100.3476,2026-10-13,2027-10-12
+23H2,General Availability Channel,2023-10-31,2025-03-11,22631.5039,2025-11-11,2026-11-10
+22H2,General Availability Channel,2022-09-20,2025-03-11,22621.5039,End of servicing,2025-10-14
