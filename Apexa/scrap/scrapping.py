@@ -5,43 +5,60 @@ from selenium.webdriver.chrome.options import Options
 import pandas as pd
 import time
 
-# Set up Selenium WebDriver options
-options = Options()
-options.add_argument('--headless')  # Run in headless mode
-options.add_argument('--disable-gpu')
-options.add_argument('--no-sandbox')
 
-# Path to ChromeDriver (Update with correct path if needed)
-service = Service("C:/Windows/chromedriver.exe")
-driver = webdriver.Chrome(service=service, options=options)
+class WikipediaScraper:
+    def __init__(self, url, driver_path):
+        self.url = url
+        self.driver_path = driver_path
+        self.driver = self._setup_driver()
 
-# Open the Wikipedia page
-driver.get(
-    "https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information")
-time.sleep(3)  # Wait for the page to load
+    def _setup_driver(self):
+        """Initialize Selenium WebDriver with options."""
+        options = Options()
+        options.add_argument('--headless')  # Run in headless mode
+        options.add_argument('--disable-gpu')
+        options.add_argument('--no-sandbox')
+        service = Service(self.driver_path)
+        return webdriver.Chrome(service=service, options=options)
 
-# Find all tables
-tables = driver.find_elements(By.TAG_NAME, "table")
-all_data = []
+    def scrape_tables(self):
+        """Extract tables from the Wikipedia page."""
+        self.driver.get(self.url)
+        time.sleep(3)  # Wait for page to load
+        tables = self.driver.find_elements(By.TAG_NAME, "table")
+        all_data = []
 
-# Loop through each table and extract data
-for table in tables:
-    rows = table.find_elements(By.TAG_NAME, "tr")
-    table_data = []
-    for row in rows:
-        cols = row.find_elements(By.TAG_NAME, "th") + \
-            row.find_elements(By.TAG_NAME, "td")
-        table_data.append([col.text.strip() for col in cols])
+        for table in tables:
+            rows = table.find_elements(By.TAG_NAME, "tr")
+            table_data = []
+            for row in rows:
+                cols = row.find_elements(
+                    By.TAG_NAME, "th") + row.find_elements(By.TAG_NAME, "td")
+                table_data.append([col.text.strip() for col in cols])
 
-    # Convert to DataFrame and store
-    df = pd.DataFrame(table_data)
-    all_data.append(df)
+            df = pd.DataFrame(table_data)
+            all_data.append(df)
 
-# Close the Selenium driver
-driver.quit()
+        return all_data
 
-# Save tables to CSV files
-for i, df in enumerate(all_data):
-    df.to_csv(f"java_version_table_{i+1}.csv", index=False, header=False)
+    def save_merged_table_to_csv(self, all_data):
+        """Merge all extracted tables into one CSV file."""
+        merged_df = pd.concat(all_data, ignore_index=True)
+        merged_df.to_csv("merged_data_version_tables.csv",
+                         index=False, header=False)
+        print("Scraping complete. Merged table saved as CSV file.")
 
-print("Scraping complete. Tables saved as CSV files.")
+    def close_driver(self):
+        """Close the Selenium driver."""
+        self.driver.quit()
+
+
+# Usage
+if __name__ == "__main__":
+    url = "https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information"
+    driver_path = "C:/Windows/chromedriver.exe"  # Update path if needed
+
+    scraper = WikipediaScraper(url, driver_path)
+    tables = scraper.scrape_tables()
+    scraper.save_merged_table_to_csv(tables)
+    scraper.close_driver()
